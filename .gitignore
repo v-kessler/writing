@@ -1,0 +1,21 @@
+# build output
+dist/
+.output/
+
+# astro generated types + cache
+.astro/
+
+# dependencies
+node_modules/
+
+# env / secrets — NEVER commit your dev.to key
+.env
+.env.*
+!.env.example
+
+# os / editor
+.DS_Store
+*.log
+npm-debug.log*
+.vscode/
+!.vscode/extensions.json

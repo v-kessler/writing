@@ -1,0 +1,141 @@
+---
+/**
+ * Essay page, served at the site ROOT: /<slug>.
+ *
+ * getStaticPaths pre-renders one page per published essay. `params.slug` is the
+ * entry id (derived from the filename), which is exactly the slug used in
+ * canonical URLs and dev.to syndication.
+ *
+ * CANONICAL RULE (the whole point of this site):
+ *   canonical = frontmatter.canonicalURL ?? essayURL(slug)
+ * By default it self-references THIS domain, so search engines treat this page
+ * as the origin even after the piece is mirrored to dev.to / Medium / Hashnode.
+ */
+import { render } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import FormattedDate from "../components/FormattedDate.astro";
+import { essayURL } from "../consts";
+import { readingTime } from "../utils/reading-time";
+import { getPublishedEssays } from "../utils/essays";
+import type { GetStaticPaths } from "astro";
+
+export const getStaticPaths = (async () => {
+  const essays = await getPublishedEssays();
+  return essays.map((essay) => ({
+    params: { slug: essay.id },
+    props: { essay },
+  }));
+}) satisfies GetStaticPaths;
+
+const { essay } = Astro.props;
+const { title, description, publishDate, updatedDate, tags, series, canonicalURL } =
+  essay.data;
+
+// The canonical: explicit override wins, otherwise self-referential.
+const canonical = canonicalURL ?? essayURL(essay.id);
+
+// Absolute OG image URL, if the essay declared one.
+const image = essay.data.ogImage
+  ? new URL(essay.data.ogImage.src, Astro.site).href
+  : undefined;
+
+const { Content } = await render(essay);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  type="article"
+  image={image}
+  publishDate={publishDate}
+  updatedDate={updatedDate}
+>
+  <article>
+    <header class="essay-head">
+      {series && <a class="eyebrow series" href={`/series/${series}`}>{series}</a>}
+      <h1>{title}</h1>
+      <p class="essay-meta faint small">
+        <FormattedDate date={publishDate} />
+        <span aria-hidden="true">·</span>
+        {readingTime(essay.body ?? "")}
+        {
+          updatedDate && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>Updated <FormattedDate date={updatedDate} /></span>
+            </>
+          )
+        }
+      </p>
+      {
+        canonicalURL && (
+          <p class="canonical-note small muted">
+            Originally published at{" "}
+            <a href={canonicalURL} rel="canonical">
+              {canonicalURL}
+            </a>
+            .
+          </p>
+        )
+      }
+    </header>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    {
+      tags.length > 0 && (
+        <footer class="essay-foot">
+          <div class="pills">
+            {tags.map((t) => (
+              <a class="tag" href={`/tags/${t}`}>
+                {t}
+              </a>
+            ))}
+          </div>
+        </footer>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .essay-head {
+    margin-bottom: 2.2rem;
+  }
+  .series {
+    display: inline-block;
+    margin-bottom: 0.6rem;
+    text-decoration: none;
+  }
+  .series:hover {
+    color: var(--accent);
+  }
+  .essay-meta {
+    font-family: var(--font-sans);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin: 0.6rem 0 0;
+  }
+  .canonical-note {
+    margin-top: 0.8rem;
+  }
+  .prose :global(h2),
+  .prose :global(h3) {
+    scroll-margin-top: 5rem;
+  }
+  .essay-foot {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+</style>

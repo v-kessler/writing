@@ -1,0 +1,40 @@
+---
+/**
+ * One series — its essays, newest first. Ordering within a series often matters
+ * for reading order, but we keep newest-first for consistency with the rest of
+ * the site; change the sort here if you want chronological reading order.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import EssayCard from "../../components/EssayCard.astro";
+import { SITE_TITLE, SITE_URL } from "../../consts";
+import { getPublishedEssays, getAllSeries } from "../../utils/essays";
+import type { GetStaticPaths } from "astro";
+
+export const getStaticPaths = (async () => {
+  const all = await getPublishedEssays();
+  const series = await getAllSeries();
+  return series.map((s) => ({
+    params: { series: s.series },
+    props: { essays: all.filter((e) => e.data.series === s.series), name: s.series },
+  }));
+}) satisfies GetStaticPaths;
+
+const { essays, name } = Astro.props;
+---
+
+<BaseLayout
+  title={`Series: ${name}`}
+  description={`Essays in the “${name}” series by ${SITE_TITLE}.`}
+  canonical={`${SITE_URL}/series/${name}`}
+  wide
+>
+  <p class="eyebrow">Series</p>
+  <h1>{name}</h1>
+  <p class="muted small">
+    {essays.length} essay{essays.length === 1 ? "" : "s"} ·
+    <a href="/series">all series</a>
+  </p>
+  <section class="list">
+    {essays.map((essay) => <EssayCard essay={essay} />)}
+  </section>
+</BaseLayout>

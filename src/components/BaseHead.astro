@@ -1,0 +1,92 @@
+---
+/**
+ * BaseHead — everything that goes in <head> for SEO and social.
+ *
+ * THE IMPORTANT PART: the canonical <link>. Every page passes a `canonical`
+ * absolute URL and we emit it verbatim. For essays the caller computes it as
+ * frontmatter.canonicalURL ?? essayURL(slug) — so by default the canonical is
+ * self-referential to THIS site, making us the SEO origin. Syndicated copies
+ * (dev.to, Medium, Hashnode) point their canonical back here, so search
+ * engines credit the original to this domain.
+ */
+import { SITE_TITLE, TWITTER_HANDLE } from "../consts";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  /** Absolute canonical URL for this page. Required — never guess it here. */
+  canonical: string;
+  /** "website" for indexes, "article" for essays. */
+  type?: "website" | "article";
+  /** Absolute URL to an OG image, if any. */
+  image?: string;
+  publishDate?: Date;
+  updatedDate?: Date;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  type = "website",
+  image,
+  publishDate,
+  updatedDate,
+} = Astro.props;
+
+// Show "Page — Viktor Kessler" but avoid "Viktor Kessler — Viktor Kessler".
+const fullTitle = title === SITE_TITLE ? title : `${title} — ${SITE_TITLE}`;
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="generator" content={Astro.generator} />
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<meta name="author" content={SITE_TITLE} />
+
+<!-- Canonical: the SEO origin declaration. -->
+<link rel="canonical" href={canonical} />
+
+<!-- Open Graph -->
+<meta property="og:type" content={type} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:site_name" content={SITE_TITLE} />
+{image && <meta property="og:image" content={image} />}
+{
+  type === "article" && publishDate && (
+    <meta
+      property="article:published_time"
+      content={publishDate.toISOString()}
+    />
+  )
+}
+{
+  type === "article" && updatedDate && (
+    <meta
+      property="article:modified_time"
+      content={updatedDate.toISOString()}
+    />
+  )
+}
+
+<!-- Twitter / X card -->
+<meta name="twitter:card" content={image ? "summary_large_image" : "summary"} />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+{image && <meta name="twitter:image" content={image} />}
+{TWITTER_HANDLE && <meta name="twitter:creator" content={TWITTER_HANDLE} />}
+
+<!-- Feed autodiscovery -->
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title={SITE_TITLE}
+  href="/rss.xml"
+/>
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />

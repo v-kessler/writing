@@ -1,0 +1,76 @@
+name: Syndicate & announce essays
+
+# Publish-once → syndicate/announce. Runs when essays change on main, or on demand.
+# Both scripts only act on NEW ORIGINALS (published, self-canonical); the
+# imported LinkedIn archive (external canonical) is skipped automatically.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/content/essays/**"
+  workflow_dispatch: {}
+
+# Needed so the job can commit the updated map files back to the repo.
+permissions:
+  contents: write
+
+# Never let two runs race on the map files.
+concurrency:
+  group: syndicate-essays
+  cancel-in-progress: false
+
+jobs:
+  syndicate:
+    runs-on: ubuntu-latest
+    env:
+      DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
+      BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}
+      BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+      VAKAMO_BUILD_HOOK: ${{ secrets.VAKAMO_BUILD_HOOK }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # 24.x: needed for importing SITE_URL from consts.ts (TS type stripping).
+          node-version: "24"
+          cache: "npm"
+
+      - run: npm ci
+
+      # Full-content republish to dev.to (canonical back to this site).
+      - name: Syndicate to dev.to
+        if: ${{ env.DEVTO_API_KEY != '' }}
+        run: node scripts/syndicate-devto.mjs
+
+      # Announcement (link card) on Bluesky. Skipped if secrets aren't set.
+      - name: Announce on Bluesky
+        if: ${{ env.BLUESKY_APP_PASSWORD != '' }}
+        run: node scripts/announce-bluesky.mjs
+
+      - name: Commit updated syndication maps
+        run: |
+          if [[ -n "$(git status --porcelain data/)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add data/devto-map.json data/bluesky-map.json
+            git commit -m "chore: update syndication maps [skip ci]"
+            git push
+          else
+            echo "No map changes to commit."
+          fi
+
+      # Tell vakamo.com's host to rebuild — it refetches /essays.json and shows
+      # the new/updated essay. Host-level hook: no PAT, no access to this or the
+      # vakamo repo. Inert until the VAKAMO_BUILD_HOOK secret is set.
+      - name: Trigger vakamo.com rebuild
+        if: ${{ env.VAKAMO_BUILD_HOOK != '' }}
+        run: |
+          # Brief pause so the writing site's OWN deploy publishes the fresh
+          # /essays.json before vakamo refetches it. If your host is slow, raise
+          # this — or, for exact ordering, drive vakamo from the writing host's
+          # "deploy succeeded" webhook instead (see README) and delete this step.
+          sleep 90
+          curl -fsS -X POST "$VAKAMO_BUILD_HOOK" > /dev/null \
+            && echo "Triggered vakamo.com rebuild." \
+            || { echo "vakamo build hook failed"; exit 1; }

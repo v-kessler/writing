@@ -1,0 +1,38 @@
+---
+/**
+ * One tag — every published essay carrying it, newest first.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import EssayCard from "../../components/EssayCard.astro";
+import { SITE_TITLE, SITE_URL } from "../../consts";
+import { getPublishedEssays, getAllTags } from "../../utils/essays";
+import type { GetStaticPaths } from "astro";
+
+export const getStaticPaths = (async () => {
+  const all = await getPublishedEssays();
+  const tags = await getAllTags();
+  return tags.map((t) => ({
+    params: { tag: t.tag },
+    props: { essays: all.filter((e) => e.data.tags.includes(t.tag)), tag: t.tag },
+  }));
+}) satisfies GetStaticPaths;
+
+const { essays, tag } = Astro.props;
+---
+
+<BaseLayout
+  title={`Tag: ${tag}`}
+  description={`Essays tagged “${tag}” by ${SITE_TITLE}.`}
+  canonical={`${SITE_URL}/tags/${tag}`}
+  wide
+>
+  <p class="eyebrow">Tag</p>
+  <h1>#{tag}</h1>
+  <p class="muted small">
+    {essays.length} essay{essays.length === 1 ? "" : "s"} ·
+    <a href="/tags">all tags</a>
+  </p>
+  <section class="list">
+    {essays.map((essay) => <EssayCard essay={essay} />)}
+  </section>
+</BaseLayout>

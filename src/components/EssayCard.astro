@@ -1,0 +1,91 @@
+---
+/**
+ * One essay in a list: title, date, reading time, description, tags.
+ * Used on the home page, series pages, and tag pages.
+ */
+import type { CollectionEntry } from "astro:content";
+import FormattedDate from "./FormattedDate.astro";
+import { essayPath } from "../consts";
+import { readingTime } from "../utils/reading-time";
+
+interface Props {
+  essay: CollectionEntry<"essays">;
+}
+const { essay } = Astro.props;
+const { title, description, publishDate, tags, series } = essay.data;
+---
+
+<article class="card">
+  <h2 class="card-title">
+    <a href={essayPath(essay.id)}>{title}</a>
+  </h2>
+  <p class="meta faint small">
+    <FormattedDate date={publishDate} />
+    <span aria-hidden="true">·</span>
+    {readingTime(essay.body ?? "")}
+    {
+      series && (
+        <>
+          <span aria-hidden="true">·</span>
+          <a class="series-link" href={`/series/${series}`}>
+            {series}
+          </a>
+        </>
+      )
+    }
+  </p>
+  <p class="card-desc muted">{description}</p>
+  {
+    tags.length > 0 && (
+      <p class="card-tags">
+        {tags.map((t) => (
+          <a class="tag" href={`/tags/${t}`}>
+            {t}
+          </a>
+        ))}
+      </p>
+    )
+  }
+</article>
+
+<style>
+  .card {
+    padding-block: 1.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 1.55rem;
+    margin: 0 0 0.35rem;
+  }
+  .card-title a {
+    color: var(--fg);
+    text-decoration: none;
+  }
+  .card-title a:hover {
+    color: var(--accent);
+  }
+  .meta {
+    font-family: var(--font-sans);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin: 0 0 0.5rem;
+  }
+  .series-link {
+    color: var(--fg-muted);
+    text-decoration: none;
+  }
+  .series-link:hover {
+    color: var(--accent);
+  }
+  .card-desc {
+    margin: 0 0 0.7rem;
+  }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+  }
+</style>

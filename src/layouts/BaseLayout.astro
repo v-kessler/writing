@@ -1,0 +1,40 @@
+---
+/**
+ * The single page shell. Pages pass their SEO props straight through to
+ * BaseHead and drop their body into the default <slot>. `wide` widens the
+ * content column for list/index pages vs. the narrow reading column.
+ */
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  canonical: string;
+  type?: "website" | "article";
+  image?: string;
+  publishDate?: Date;
+  updatedDate?: Date;
+  wide?: boolean;
+}
+
+const { wide = false, ...head } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead {...head} />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Header />
+    <main id="main">
+      <div class={wide ? "wrap wrap--wide" : "wrap"}>
+        <slot />
+      </div>
+    </main>
+    <Footer />
+  </body>
+</html>

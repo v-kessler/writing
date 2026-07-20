@@ -1,0 +1,33 @@
+---
+/**
+ * About — a stub. Replace the prose below with your own bio. This is a normal
+ * .astro page; you could also convert it to Markdown if you prefer.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { SITE_TITLE, SITE_URL } from "../consts";
+---
+
+<BaseLayout
+  title="About"
+  description={`About ${SITE_TITLE} — co-founder of Vakamo and creator of Lakekeeper.`}
+  canonical={SITE_URL + "/about"}
+>
+  <h1>About</h1>
+  <div class="prose">
+    <p>
+      I'm <strong>Viktor Kessler</strong>, co-founder of
+      <a href="#">Vakamo</a> and creator of
+      <a href="#">Lakekeeper</a>. I write about data architecture, lakehouses,
+      governance, and AI.
+    </p>
+    <p>
+      This site is the canonical home for my long-form essays. Anything you find
+      republished elsewhere (dev.to, Medium, Hashnode) points its canonical URL
+      back here.
+    </p>
+    <p class="muted">
+      <em>TODO: replace this stub with your real bio, links, and a way to reach
+      you.</em>
+    </p>
+  </div>
+</BaseLayout>

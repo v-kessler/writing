@@ -1,0 +1,101 @@
+---
+/**
+ * Home — all published essays, newest first, with quick filters by series and
+ * tag. Filtering is zero-JS: the pills link to /series/<name> and /tags/<name>
+ * pages that render the filtered subset. This keeps the site content-first and
+ * shippable as static HTML with no client bundle.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import EssayCard from "../components/EssayCard.astro";
+import { SITE_TITLE, SITE_DESCRIPTION, SITE_URL } from "../consts";
+import { getPublishedEssays, getAllSeries, getAllTags } from "../utils/essays";
+
+const essays = await getPublishedEssays();
+const series = await getAllSeries();
+const tags = await getAllTags();
+---
+
+<BaseLayout
+  title={SITE_TITLE}
+  description={SITE_DESCRIPTION}
+  canonical={SITE_URL + "/"}
+  wide
+>
+  <section class="intro">
+    <h1>Essays</h1>
+    <p class="lede muted">{SITE_DESCRIPTION}</p>
+  </section>
+
+  {
+    (series.length > 0 || tags.length > 0) && (
+      <section class="filters" aria-label="Browse by series and tag">
+        {series.length > 0 && (
+          <div class="filter-group">
+            <span class="eyebrow">Series</span>
+            <div class="pills">
+              {series.map((s) => (
+                <a class="tag" href={`/series/${s.series}`}>
+                  {s.series} <span class="faint">{s.count}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+        {tags.length > 0 && (
+          <div class="filter-group">
+            <span class="eyebrow">Tags</span>
+            <div class="pills">
+              {tags.map((t) => (
+                <a class="tag" href={`/tags/${t.tag}`}>
+                  {t.tag} <span class="faint">{t.count}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+    )
+  }
+
+  <section class="list">
+    {
+      essays.length === 0 ? (
+        <p class="muted">No essays published yet.</p>
+      ) : (
+        essays.map((essay) => <EssayCard essay={essay} />)
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .intro {
+    margin-bottom: 2rem;
+  }
+  .lede {
+    font-size: 1.2rem;
+    max-width: 40rem;
+  }
+  .filters {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.3rem 0;
+    border-block: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+  .filter-group {
+    display: flex;
+    gap: 0.9rem;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .eyebrow {
+    min-width: 4rem;
+  }
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+</style>

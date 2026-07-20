@@ -1,0 +1,45 @@
+---
+/**
+ * Tag index — every tag as a weighted cloud (bigger = more essays).
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { SITE_TITLE, SITE_URL } from "../../consts";
+import { getAllTags } from "../../utils/essays";
+
+const tags = await getAllTags();
+const max = Math.max(1, ...tags.map((t) => t.count));
+// Map count -> font size between 0.9rem and 1.6rem.
+const size = (c: number) => 0.9 + (c / max) * 0.7;
+---
+
+<BaseLayout
+  title="Tags"
+  description={`Browse essays by topic — tags used by ${SITE_TITLE}.`}
+  canonical={SITE_URL + "/tags"}
+  wide
+>
+  <h1>Tags</h1>
+  {
+    tags.length === 0 ? (
+      <p class="muted">No tags yet.</p>
+    ) : (
+      <div class="cloud">
+        {tags.map((t) => (
+          <a class="tag" href={`/tags/${t.tag}`} style={`font-size:${size(t.count)}rem`}>
+            {t.tag} <span class="faint">{t.count}</span>
+          </a>
+        ))}
+      </div>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+    margin-top: 1.5rem;
+  }
+</style>
