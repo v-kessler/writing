@@ -28,7 +28,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import matter from "gray-matter";
 
-import { SITE_URL } from "../src/consts.ts";
+import { SITE_URL, essayURL } from "../src/consts.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -101,7 +101,7 @@ async function createSession() {
 }
 
 async function postAnnouncement(session, essay) {
-  const url = `${SITE_URL}/${essay.slug}`;
+  const url = essayURL(essay.slug);
   const title = essay.frontmatter.title;
   const description = essay.frontmatter.description ?? "";
   const text = clamp(`New essay: ${title}`, POST_MAX);
@@ -158,7 +158,7 @@ async function main() {
 
   if (DRY_RUN) {
     for (const e of pending) {
-      log(`would announce "${e.slug}" -> ${SITE_URL}/${e.slug}`);
+      log(`would announce "${e.slug}" -> ${essayURL(e.slug)}`);
     }
     return;
   }

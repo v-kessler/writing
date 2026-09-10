@@ -10,7 +10,7 @@
  *      - already syndicated -> PUT    /api/articles/{id} (update)
  *    Which is which is decided by data/devto-map.json, a COMMITTED map of
  *    slug -> { id, url }. This is what prevents duplicate cross-posts on re-run.
- * 3. Sets canonical_url = SITE_URL + "/" + slug on every article, so dev.to
+ * 3. Sets canonical_url = essayURL(slug) on every article, so dev.to
  *    tells search engines THIS site is the origin.
  * 4. Respects rate limits: a delay between calls + exponential backoff on 429.
  *
@@ -27,7 +27,7 @@ import { dirname, join } from "node:path";
 import matter from "gray-matter";
 
 // SITE_URL lives in exactly one place. Node strips the TS types on import.
-import { SITE_URL } from "../src/consts.ts";
+import { SITE_URL, essayURL } from "../src/consts.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -152,7 +152,7 @@ function toArticle(essay) {
   // LinkedIn); otherwise the writing site is the origin. This keeps every
   // syndicated copy pointing at the SAME origin the site's own pages declare.
   const canonical =
-    essay.frontmatter.canonicalURL ?? `${SITE_URL}/${essay.slug}`;
+    essay.frontmatter.canonicalURL ?? essayURL(essay.slug);
   return {
     title: essay.frontmatter.title,
     body_markdown: essay.body,

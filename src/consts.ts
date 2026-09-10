@@ -7,7 +7,7 @@
  * │  sitemap, and the dev.to syndication `canonical_url`.                   │
  * └──────────────────────────────────────────────────────────────────────┘
  */
-export const SITE_URL = "https://YOURDOMAIN.com";
+export const SITE_URL = "https://vakamo.com";
 
 /** Author + site identity, reused across meta tags, the header, and the RSS feed. */
 export const SITE_TITLE = "Viktor Kessler";
@@ -27,7 +27,15 @@ export const TWITTER_HANDLE = "";
  * "canonical = SITE_URL + '/' + slug" rule is enforced in exactly one spot.
  */
 export const essayPath = (slug: string): string => `/${slug}`;
-export const essayURL = (slug: string): string => `${SITE_URL}/${slug}`;
+
+/**
+ * The PUBLIC canonical home of an essay. This repo is the source of truth for the
+ * text, but the published origin is vakamo.com/resources/blog/<slug> — so canonical
+ * tags, /essays.json, RSS links and the dev.to `canonical_url` all point there.
+ * `essayPath` stays root-relative because it only drives this repo's local preview.
+ */
+export const essayURL = (slug: string): string =>
+  `${SITE_URL}/resources/blog/${slug}`;
 
 /** Primary nav — rendered in the header. */
 export const NAV_LINKS = [
