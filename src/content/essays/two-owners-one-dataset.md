@@ -64,8 +64,6 @@ Continuous governance replaces that with three simple properties:
 
 This is also how governance scales to agents. An agent acting for Bob should get exactly Bob's permissions, evaluated the same way as Bob's own query, and leave the same trail. If the rule changes, the next request already follows the new rule.
 
-## The picture
-
 ![Before and after. Today, an order row in Max's Postgres database passes through a nightly export, a lake copy and a re-secured view before it reaches Alice's dashboard; every hop brings a new owner, new permissions and lost lineage, so the board gets two numbers. After shifting left, Postgres tables, Iceberg tables and files sit behind one control plane (one catalog with one owner per dataset, one policy set as code, checked at every access, one audit log), and analysts, engines and AI agents acting as the user all read through it. Max owns the data from the first row to the last answer: one number.](https://vakamo.com/diagrams/shift-left-control-plane.svg)
 
 The difference is not more security on the right. It is fewer places where security has to be rebuilt.
