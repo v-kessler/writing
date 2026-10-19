@@ -6,5 +6,9 @@
   "the-ungoverned-state-of-agent-memory": {
     "uri": "at://did:plc:34vxp6umpkcw2ia6iveo4mm4/app.bsky.feed.post/3mv5prprc4i2x",
     "cid": "bafyreihw2vjxnrtv2tmac2svrxss2wqlik5usddyh6avewvum6s2vuu5ke"
+  },
+  "two-owners-one-dataset": {
+    "uri": "at://did:plc:34vxp6umpkcw2ia6iveo4mm4/app.bsky.feed.post/3mya3dp3zmm22",
+    "cid": "bafyreiftqfhsxg6mgvtbnl553afpt3vnxehr6mm4i445zagb2y6skrfiyy"
   }
 }
