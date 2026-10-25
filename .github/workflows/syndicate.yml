@@ -8,7 +8,12 @@ on:
     branches: [main]
     paths:
       - "src/content/essays/**"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "dev.to: sync only this essay slug (empty = all)"
+        required: false
+        default: ""
 
 # Needed so the job can commit the updated map files back to the repo.
 permissions:
@@ -27,6 +32,7 @@ jobs:
       BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}
       BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
       VAKAMO_BUILD_HOOK: ${{ secrets.VAKAMO_BUILD_HOOK }}
+      DEVTO_ONLY: ${{ inputs.only }}
     steps:
       - uses: actions/checkout@v4
 

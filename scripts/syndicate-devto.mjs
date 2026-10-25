@@ -37,6 +37,9 @@ const MAP_PATH = join(ROOT, "data", "devto-map.json");
 const DEVTO_API = "https://dev.to/api/articles";
 const API_KEY = process.env.DEVTO_API_KEY;
 const DRY_RUN = process.argv.includes("--dry-run");
+// Optional: sync just this slug and leave every other dev.to post untouched
+// (e.g. to keep a hand-uploaded PNG diagram from being overwritten).
+const ONLY_SLUG = process.env.DEVTO_ONLY || "";
 
 // Rate-limit tuning. dev.to is strict; be a polite citizen.
 const DELAY_BETWEEN_CALLS_MS = 2000;
@@ -77,6 +80,7 @@ async function loadPublishedEssays() {
     const { data, content } = matter(raw);
     if (data.draft === true) continue;
     const slug = file.replace(/\.(md|mdx)$/, "");
+    if (ONLY_SLUG && slug !== ONLY_SLUG) continue;
     // Skip pieces that originate elsewhere (external canonical).
     if (data.canonicalURL && !data.canonicalURL.startsWith(SITE_URL)) {
       log(`skipping "${slug}" — external canonical (${data.canonicalURL})`);
